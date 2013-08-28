@@ -197,6 +197,7 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                     loading: 'Loading'
                 },
                 hasPtr: false,
+                hasBar: true,
                 ptrCallback: function () {}
             }, opt, true, null, true);
         this.html = '<div class="pull-to-refresh">' +
@@ -237,23 +238,11 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                 $loading.hide();
                 $pull.show();
                 $spinner.hide();
-                
-                // create scrollbar
-                var scrollbar = $cont.all('.scroll-bar');
-                if (!scrollbar.length) {
-                    scrollbar = $('<div class="scroll-bar"></div>').css({
-                        position: 'absolute',
-                        right: 3,
-                        top: 1,
-                        width: 6,
-                        height: 60,
-                        background: 'rgba(0, 0, 0, 0.6)',
-                        webkitBorderRadius: '3px'
-                    }).appendTo($cont);
-                }
+                                
 
                 var ptrHeight = $ptr.height(),
-                    arrowDelay = ptrHeight / 3 * 2;
+                    arrowDelay = ptrHeight / 3 * 2,
+                    scrollbar;
                 
                 var scrollerC = new EasyScroller(o[0], cfg),
                     scroller = scrollerC.scroller;
@@ -268,10 +257,31 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                     $arrow.css('webkitTransform', 'rotate('+ deg + 'deg)');
 
                 };
-                scrollerC.onScroll = function (l, t, z) {
-                    me.dealScrollbarByValues(l, t, z, scroller, scrollbar);
+
+
+                // hasBar
+                if (cfg.hasBar) {
+                    // create scrollbar
+                    scrollbar = $cont.all('.scroll-bar');
+                    if (!scrollbar.length) {
+                        scrollbar = $('<div class="scroll-bar"></div>').css({
+                            position: 'absolute',
+                            right: 3,
+                            top: 1,
+                            width: 6,
+                            height: 6,
+                            background: 'rgba(0, 0, 0, 0.6)',
+                            webkitBorderRadius: '3px',
+                            opacity: 0                        
+                        }).appendTo($cont);
+                    }
+                    me.setBarHeight(scrollbar, $cont);
+                    scrollerC.onScroll = function (l, t, z) {
+                        me.dealScrollbarByValues(l, t, z, scroller, scrollbar);
+                    }
                 }
 
+                // hasPtr
                 if (cfg.hasPtr) {
                     scroller.activatePullToRefresh(ptrHeight, function () {
                         $pull.hide();
@@ -317,6 +327,12 @@ KISSY.add(function (S, Scroller, Node, Promise) {
             
             this.scroller = scrollers.length > 1 ? scrollers : scrollers[0];
         },
+        setBarHeight: function ($bar, $cont) {
+            var vpH = $cont.height(),
+                scale = vpH/$cont[0].scrollHeight,
+                barH = vpH * scale;
+            $bar.css('height', barH);
+        },
         dealScrollbarByValues: function (l, t, z, scroller, $scrollbar) {
             var sx = this.cfg.scrollingX,
                 sy = this.cfg.scrollingY,
@@ -325,9 +341,10 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                 vpH = $cont.height(),
                 conH = $cont[0].scrollHeight,
                 scale = vpH/conH,
-                barH = vpH * scale;
+                barH = vpH * scale,
+                barW = $scrollbar.width();
 
-                barH = Math.max(barH, $scrollbar.width());
+                barH = Math.max(barH, barW);
 
             if (sy) {
                 //console.log(l, t, z, o)
@@ -335,14 +352,28 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                     barT = 0;
                 if (t > 0) {
                     barT = t * scale;
+                    if (t >= maxY) {
+                        barH = Math.max(barW, (vpH*scale + maxY - t));
+                        barT = vpH - barH - 2;
+                    }
+                } else if (t < 0) {
+                    barT = 0;
+                    barH = Math.max(barW, (vpH*scale + t));
                 }
                 //console.log(barT)
                 $scrollbar.css({
+                    opacity: 1,
                     height: barH,
-                    top: barT
+                    //top: barT
+                    webkitTransform: 'translate(0, '+barT+'px)'
                 })
                 
             }
+
+            clearTimeout($scrollbar.__hideTimer);
+            $scrollbar.__hideTimer = setTimeout(function () {
+                $scrollbar.css('opacity', 0);
+            }, 200);
         }
     };
 
