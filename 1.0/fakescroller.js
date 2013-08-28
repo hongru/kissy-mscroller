@@ -12,6 +12,7 @@ KISSY.add(function (S, Scroller, Node, Promise) {
         var that = this;
         this.scroller = new Scroller(function(left, top, zoom) {
             that.render(left, top, zoom);
+            that.onScroll && that.onScroll(left, top, zoom);
         }, options);
 
         // bind events
@@ -214,6 +215,7 @@ KISSY.add(function (S, Scroller, Node, Promise) {
     FakeScroller.prototype = {
         _init: function () {
             var cfg = this.cfg,
+                me = this,
                 scrollers = [];
             this.els.container = $(this.selector).css('overflow', 'hidden');
             var $wrap = this.els.container.all('.scroll-wrap');
@@ -233,11 +235,27 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                 $loading.hide();
                 $pull.show();
                 $spinner.hide();
+                
+                // create scrollbar
+                var scrollbar = o.all('.scroll-bar');
+                o.css('position', 'relative');
+                if (!scrollbar.length) {
+                    scrollbar = $('<div class="scroll-bar"></div>').css({
+                        position: 'absolute',
+                        right: 3,
+                        top: 1,
+                        width: 6,
+                        height: 60,
+                        background: 'rgba(0, 0, 0, 0.6)',
+                        webkitBorderRadius: '3px'
+                    }).appendTo(o);
+                }
 
                 var ptrHeight = $ptr.height(),
                     arrowDelay = ptrHeight / 3 * 2;
                 
-                var scroller = new EasyScroller(o[0], cfg).scroller;
+                var scrollerC = new EasyScroller(o[0], cfg),
+                    scroller = scrollerC.scroller;
                 scroller.effectiveMove = function () {
                     var values = this.getValues();
 
@@ -247,7 +265,11 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                               : 0));
                     $arrow.show();
                     $arrow.css('webkitTransform', 'rotate('+ deg + 'deg)');
+
                 };
+                scrollerC.onScroll = function (l, t, z) {
+                    me.dealScrollbarByValues(l, t, z, scroller, scrollbar);
+                }
 
                 if (cfg.hasPtr) {
                     scroller.activatePullToRefresh(ptrHeight, function () {
@@ -293,6 +315,15 @@ KISSY.add(function (S, Scroller, Node, Promise) {
             });
             
             this.scroller = scrollers.length > 1 ? scrollers : scrollers[0];
+        },
+        dealScrollbarByValues: function (l, t, z, scroller, scrollbar) {
+            var sx = this.cfg.scrollingX,
+                sy = this.cfg.scrollingY,
+                maxO = scroller.getScrollMax();
+            if (sy) {
+                //console.log(l, t, z, o)
+                var maxY = o.top
+            }
         }
     };
 
