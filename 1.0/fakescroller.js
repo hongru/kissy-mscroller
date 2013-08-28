@@ -319,7 +319,7 @@ KISSY.add(function (S, Scroller, Node, Promise) {
         dealScrollbarByValues: function (l, t, z, scroller, scrollbar) {
             var sx = this.cfg.scrollingX,
                 sy = this.cfg.scrollingY,
-                maxO = scroller.getScrollMax();
+                o = scroller.getScrollMax();
             if (sy) {
                 //console.log(l, t, z, o)
                 var maxY = o.top
