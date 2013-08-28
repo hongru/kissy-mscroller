@@ -1,4 +1,4 @@
-KISSY.add(function (S, Node, Base) {
+KISSY.add(function (S, Node, Base, Promise) {
     var $ = Node.all;
     /**
      * 
@@ -14,11 +14,13 @@ KISSY.add(function (S, Node, Base) {
         this.selector = selector;
         this.isTouch = !!('ontouchstart' in window);
         this.cfg = S.mix({
+                hasPtr: false,
                 message: {
                     pull: 'Pull to refresh',
                     release: 'Release to refresh',
                     loading: 'Loading'
-                }
+                },
+                ptrCallback: function () {}
             }, comConfig, true, null, true);
         this.html = '<div class="pull-to-refresh">' +
 	          '<div class="icon"></div>' +
@@ -32,22 +34,39 @@ KISSY.add(function (S, Node, Base) {
 	        '</div>';
         
         this.els = {};
+        
         this._init();
+        
     }
     S.extend(KSMScroller, Base, /** @lends KSMScroller.prototype*/{
         _init: function () {
+            this.els.container = $(this.selector);
+            this._initScroll();
+            this.cfg.hasPtr && this._initPtr();
+        },
+        _initScroll: function () {
+            this.els.container.css({
+                'overflowY': 'auto',
+                'webkitOverflowScrolling': 'touch',
+                'mozOverflowScrolling': 'touch',
+                'msOverflowScrolling': 'touch',
+                'oOverflowScrolling': 'touch',
+                'overflowScrolling': 'touch',
+                'position': 'relative'
+            })
+        },
+        _initPtr: function () {
             var isTouch = this.isTouch,
                 cfg = this.cfg,
                 html = this.html;
 
-            this.els.container = $(this.selector);
             this.els.container.each(function () { 
                 if (!isTouch) {
                     return;
                 }     
                 
                 var e = $(this).prepend(html),
-                  content = e.one('.wrap'),
+                  content = e.one('.scroll-wrap'),
                   ptr = e.one('.pull-to-refresh'),
                   arrow = e.one('.arrow'),
                   spinner = e.one('.spinner'),
@@ -59,7 +78,10 @@ KISSY.add(function (S, Node, Base) {
                   isActivated = false,
                   isLoading = false;
                   
-
+                content.css({
+                    'minHeight': '100%',
+                    'webkitTransform': 'translateZ(0)'
+                });
                 content.on('touchstart', function (ev) {
                     if (e.scrollTop() === 0) { // fix scrolling
                         e.scrollTop(1);
@@ -109,10 +131,24 @@ KISSY.add(function (S, Node, Base) {
 
                         ptr.css('position', 'static');
                         
-                        cfg.callback().then(function() {
+                        // defer callback
+                        var deferCallback = function () {
+                            var d = new Promise.Defer(),
+                                promise = d.promise;
+                            var ret = promise.then(function () {
+                                var d = new Promise.Defer()
+                                cfg.ptrCallback(d);
+                                return d.promise;
+                           });
+                           d.resolve();
+                           
+                           return ret;
+                        }
+                        
+                        deferCallback().then(function() {
                               ptr.animate({
                                 height: 0
-                              }, 0.1, 'linear', function () {
+                              }, 0.1, 'easeOut', function () {
                                 ptr.css({
                                     position: 'absolute',
                                     height: ptrHeight
@@ -130,5 +166,5 @@ KISSY.add(function (S, Node, Base) {
     
     return KSMScroller;
 }, {
-    requires: ['node', 'base']
+    requires: ['node', 'base', 'promise']
 });

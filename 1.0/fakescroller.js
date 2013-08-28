@@ -1,4 +1,4 @@
-KISSY.add(function (S, Scroller, Node) {
+KISSY.add(function (S, Scroller, Node, Promise) {
     
     var $ = Node.all;
     
@@ -155,6 +155,8 @@ KISSY.add(function (S, Scroller, Node) {
                     pageX: e.pageX,
                     pageY: e.pageY
                 }], e.timeStamp);
+                
+                that.scroller.effectiveMove && that.scroller.effectiveMove.call(that.scroller);
 
                 mousedown = true;
 
@@ -194,9 +196,7 @@ KISSY.add(function (S, Scroller, Node) {
                     loading: 'Loading'
                 },
                 hasPtr: false,
-                ptrActivateCallback: function () {},
-                ptrDeactivateCallback: function () {},
-                ptrStartLoadingCallback: function () {}
+                ptrCallback: function () {}
             }, opt, true, null, true);
         this.html = '<div class="pull-to-refresh">' +
 	          '<div class="icon"></div>' +
@@ -216,29 +216,75 @@ KISSY.add(function (S, Scroller, Node) {
             var cfg = this.cfg,
                 scrollers = [];
             this.els.container = $(this.selector).css('overflow', 'hidden');
-            var $wrap = this.els.container.all('.wrap');
+            var $wrap = this.els.container.all('.scroll-wrap');
             if (cfg.hasPtr) {
                 $wrap.prepend(this.html);
             }
             $wrap.each(function (o) {
+                // setup refresh dom style
+                var $ptr = o.all('.pull-to-refresh'),
+                    $release = o.all('.release'),
+                    $loading = o.all('.loading'),
+                    $pull = o.all('.pull'),
+                    $arrow = o.all('.arrow'),
+                    $spinner = o.all('.spinner');
+                    
+                $release.hide();
+                $loading.hide();
+                $pull.show();
+                $spinner.hide();
+
+                var ptrHeight = $ptr.height(),
+                    arrowDelay = ptrHeight / 3 * 2;
+                
                 var scroller = new EasyScroller(o[0], cfg).scroller;
+                scroller.effectiveMove = function () {
+                    var values = this.getValues();
+
+                    var top = values.top,
+                        deg = 180 - (top < -ptrHeight ? 180 : // degrees to move for the arrow (starts at 180° and decreases)
+                              (top < -arrowDelay ? Math.round(180 / (ptrHeight - arrowDelay) * (-top - arrowDelay)) 
+                              : 0));
+                    $arrow.show();
+                    $arrow.css('webkitTransform', 'rotate('+ deg + 'deg)');
+                };
+
                 if (cfg.hasPtr) {
-                    scroller.activatePullToRefresh(o.all('.pull-to-refresh').height(), function () {
-                        o.all('.pull,.loading').css('opacity', 0);
-                        o.all('.release').css('opacity', 1);
+                    scroller.activatePullToRefresh(ptrHeight, function () {
+                        $pull.hide();
+                        $loading.hide();
+                        $release.show();
                     }, function () {
-                        o.all('.release,.loading').css('opacity', 0);
-                        o.all('.pull').css('opacity', 1);
+                        $release.hide();
+                        $loading.hide();
+                        $pull.show();
                     }, function () {
-                        o.all('.release,.pull').css('opacity', 0);
-                        o.all('.loading').css('opacity', 1);
-                        o.all('.spinner').css('opacity', 1);
-                        setTimeout(function(sc) {
+                        $release.hide();
+                        $pull.hide();
+                        $loading.show();
+                        $spinner.show();
+                        $arrow.hide();
+                        
+                        // defer callback
+                        var deferCallback = function () {
+                            var d = new Promise.Defer(),
+                                promise = d.promise;
+                            var ret = promise.then(function () {
+                                var d = new Promise.Defer()
+                                cfg.ptrCallback(d);
+                                return d.promise;
+                           });
+                           d.resolve();
+                           
+                           return ret;
+                        }
+                        
+                        deferCallback().then(function(sc) { 
                             return function () {
                                 sc.finishPullToRefresh();
-                                o.all('.spinner').css('opacity', 0);
+                                $spinner.hide();
                             }
-                        }(scroller), 2000);
+                        }(scroller));
 
                     })
                 }
@@ -253,5 +299,5 @@ KISSY.add(function (S, Scroller, Node) {
     return FakeScroller;
     
 }, {
-    requires: ['./scrollfn', 'node']
+    requires: ['./scrollfn', 'node', 'promise']
 });

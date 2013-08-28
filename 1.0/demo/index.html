@@ -10,17 +10,9 @@
     
     <link rel="stylesheet" href="css/pull-to-refresh.css" />
     <style>
-        #viewport {
-            height: 300px;
-        }
         ul {margin: 0}
-        .pull {
-            opacity: 1;
-        }
-        .release, .loading {
-            opacity: 0;
-        }
-        .spinner {opacity:0}
+
+        .scrollable {height: 300px; overflow-y:auto}
     </style>
 </head>
 <body>
@@ -28,7 +20,7 @@
 
 <div id="viewport">
 <div class="scrollable">
-                        <div class="wrap">
+                        <div class="scroll-wrap">
                             <ul class="content">
                                 <li class="err">Works on</li>
                                 <li class="err">touch devices only!</li>
@@ -231,20 +223,13 @@
             scrollingX: false,
             hasPtr: true,
             
-            callback: function () {
-                var d = new Promise.Defer(),
-                    promise = d.promise;
-                var ret = promise.then(function () {
-                    var d = new Promise.Defer()
-                   setTimeout(function() {
-                        d.resolve();      
-                    }, 3000); 
-                    return d.promise;
-               });
-               d.resolve();
-               
-               return ret;
+            ptrCallback: function (defer) {
+                setTimeout(function () {
+                    alert('async 2s');
+                    defer.resolve();
+                }, 2000);
             }
+
          });
          console.log(scroller)
     })
