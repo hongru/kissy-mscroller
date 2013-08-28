@@ -217,12 +217,14 @@ KISSY.add(function (S, Scroller, Node, Promise) {
             var cfg = this.cfg,
                 me = this,
                 scrollers = [];
-            this.els.container = $(this.selector).css('overflow', 'hidden');
-            var $wrap = this.els.container.all('.scroll-wrap');
-            if (cfg.hasPtr) {
-                $wrap.prepend(this.html);
-            }
-            $wrap.each(function (o) {
+            this.els.container = $(this.selector).css('overflow', 'hidden');            
+            this.els.container.each(function ($cont) {
+                var o = $cont.all('.scroll-wrap');
+                if (cfg.hasPtr) {
+                    o.prepend(me.html);
+                }
+                $cont.css('position') == 'static' && $cont.css('position', 'relative');
+
                 // setup refresh dom style
                 var $ptr = o.all('.pull-to-refresh'),
                     $release = o.all('.release'),
@@ -237,8 +239,7 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                 $spinner.hide();
                 
                 // create scrollbar
-                var scrollbar = o.all('.scroll-bar');
-                o.css('position', 'relative');
+                var scrollbar = $cont.all('.scroll-bar');
                 if (!scrollbar.length) {
                     scrollbar = $('<div class="scroll-bar"></div>').css({
                         position: 'absolute',
@@ -248,7 +249,7 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                         height: 60,
                         background: 'rgba(0, 0, 0, 0.6)',
                         webkitBorderRadius: '3px'
-                    }).appendTo(o);
+                    }).appendTo($cont);
                 }
 
                 var ptrHeight = $ptr.height(),
@@ -316,13 +317,31 @@ KISSY.add(function (S, Scroller, Node, Promise) {
             
             this.scroller = scrollers.length > 1 ? scrollers : scrollers[0];
         },
-        dealScrollbarByValues: function (l, t, z, scroller, scrollbar) {
+        dealScrollbarByValues: function (l, t, z, scroller, $scrollbar) {
             var sx = this.cfg.scrollingX,
                 sy = this.cfg.scrollingY,
-                o = scroller.getScrollMax();
+                o = scroller.getScrollMax(),
+                $cont = $scrollbar.parent(this.selector),
+                vpH = $cont.height(),
+                conH = $cont[0].scrollHeight,
+                scale = vpH/conH,
+                barH = vpH * scale;
+
+                barH = Math.max(barH, $scrollbar.width());
+
             if (sy) {
                 //console.log(l, t, z, o)
-                var maxY = o.top
+                var maxY = o.top,
+                    barT = 0;
+                if (t > 0) {
+                    barT = t * scale;
+                }
+                //console.log(barT)
+                $scrollbar.css({
+                    height: barH,
+                    top: barT
+                })
+                
             }
         }
     };
