@@ -198,6 +198,7 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                 },
                 hasPtr: false,
                 hasBar: true,
+                imgLazyload: true,
                 ptrCallback: function () {}
             }, opt, true, null, true);
         this.html = '<div class="pull-to-refresh">' +
@@ -257,7 +258,14 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                     $arrow.css('webkitTransform', 'rotate('+ deg + 'deg)');
 
                 };
-
+                
+                // lazyload
+                if (cfg.imgLazyload) {
+                    scroller.options.scrollingComplete = function () {
+                        me.dealLazyload($cont, scrollerC);
+                    };
+                    me.dealLazyload($cont, scrollerC);
+                }
 
                 // hasBar
                 if (cfg.hasBar) {
@@ -374,6 +382,33 @@ KISSY.add(function (S, Scroller, Node, Promise) {
             $scrollbar.__hideTimer = setTimeout(function () {
                 $scrollbar.css('opacity', 0);
             }, 200);
+        },
+        dealLazyload: function ($cont, sc) {
+            var $imgs = $cont.all('img[data-src]'),
+                me = this,
+                contPos = $cont.offset();
+            if (!$imgs.length) $imgs = $($cont[0].querySelectorAll('img[data-src]'));
+
+            $imgs.each(function ($i) {
+                ($i.attr('src') == 'about:blank' || !$i.attr('src')) && $i.attr('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2NkAAIAAAoAAggA9GkAAAAASUVORK5CYII=');
+                var iPos = $i.offset(),
+                    ih = $i.height(),
+                    iw = $i.width();
+                var relaPos = {
+                    left: iPos.left - contPos.left,
+                    top: iPos.top - contPos.top
+                }
+                if (me.cfg.scrollingY) {
+                    //console.log(relaPos)
+                    if (relaPos.top > -ih && relaPos.top < $cont.height()) {
+                        $i.attr('src', $i.attr('data-src'));
+                        $i.removeAttr('data-src');
+                        $i.on('load', function () {
+                            sc.reflow();
+                        });
+                    }
+                }
+            });
         }
     };
 

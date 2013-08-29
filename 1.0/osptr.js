@@ -15,11 +15,14 @@ KISSY.add(function (S, Node, Base, Promise) {
         this.isTouch = !!('ontouchstart' in window);
         this.cfg = S.mix({
                 hasPtr: false,
+                scrollingY: true,
+                scrollingX: false,
                 message: {
                     pull: 'Pull to refresh',
                     release: 'Release to refresh',
                     loading: 'Loading'
                 },
+                imgLazyload: true,
                 ptrCallback: function () {}
             }, comConfig, true, null, true);
         this.html = '<div class="pull-to-refresh">' +
@@ -43,6 +46,7 @@ KISSY.add(function (S, Node, Base, Promise) {
             this.els.container = $(this.selector);
             this._initScroll();
             this.cfg.hasPtr && this._initPtr();
+            this.cfg.imgLazyload && this._initLazyload();
         },
         _initScroll: function () {
             this.els.container.css({
@@ -158,6 +162,40 @@ KISSY.add(function (S, Node, Base, Promise) {
                         });
                     }	
                 });
+            });
+        },
+        _initLazyload: function () {
+            var me = this;
+            this.els.container.each(function ($cont) {
+                $cont.on('scroll', function (e) {
+                    // active when scroll complete
+                    me.dealLazyload($(this));
+                });
+                me.dealLazyload($cont);
+            });
+        },
+        dealLazyload: function ($cont) {
+            var $imgs = $cont.all('img[data-src]'),
+                me = this,
+                contPos = $cont.offset();
+            if (!$imgs.length) $imgs = $($cont[0].querySelectorAll('img[data-src]'));
+
+            $imgs.each(function ($i) {
+                ($i.attr('src') == 'about:blank' || !$i.attr('src')) && $i.attr('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2NkAAIAAAoAAggA9GkAAAAASUVORK5CYII=');
+                var iPos = $i.offset(),
+                    ih = $i.height(),
+                    iw = $i.width();
+                var relaPos = {
+                    left: iPos.left - contPos.left,
+                    top: iPos.top - contPos.top
+                }
+                if (me.cfg.scrollingY) {
+                    //console.log(relaPos)
+                    if (relaPos.top > -ih && relaPos.top < $cont.height()) {
+                        $i.attr('src', $i.attr('data-src'));
+                        $i.removeAttr('data-src');
+                    }
+                }
             });
         }
     }, {ATTRS : /** @lends KSMScroller*/{

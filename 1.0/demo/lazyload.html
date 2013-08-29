@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Lazyload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/> 
+    <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1" media="(device-height: 568px)"/>
+    <script src="http://g.tbcdn.cn/kissy/k/1.3.0/kissy-min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="http://g.tbcdn.cn/kissy/k/1.3.0/css/dpl/base-min.css">
+
+    <style>
+        header {
+            width: 100%;
+            height: 46px;
+            background: #464646;
+            color: #fff;
+            line-height: 45px;
+            font-size: 17px;
+            font-weight: blod;
+            text-align: center;
+        }
+        .line {
+            line-height: 40px;
+            padding-left: 40px;
+        }
+        .line:nth-child(2n) {
+            background: #ccc;
+        }
+        .line.withimg {
+            min-height: 100px;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <header>Header</header>
+    <section class="scroll-viewport">
+        <div class="scroll-wrap"></div>
+    </section>
+    
+    <script>
+        var S = KISSY;
+        S.Config.debug = true;
+        if (S.Config.debug) {
+            S.config({
+                packages:[
+                    {
+                        name:"gallery",
+                        path:'../../../',
+                        charset:"utf-8",
+                        ignorePackageNameInUri:true
+                    }
+                ]
+            });
+        }
+        
+        var _imgs = [
+            'http://jeeart.com/site_media/upload/home/list/button.png',
+            'http://jeeart.com/site_media/upload/home/list/camera-.png',
+            'http://jeeart.com/site_media/upload/home/list/cloud_-.png',
+            'http://jeeart.com/site_media/upload/home/list/dispic-page.jpg',
+            'http://jeeart.com/site_media/upload/home/list/icons-2.png',
+            'http://jeeart.com/site_media/upload/home/list/icons.jpg',
+            'http://jeeart.com/site_media/upload/home/list/icons.png',
+            'http://jeeart.com/site_media/upload/home/list/instagram_mini.png',
+            'http://jeeart.com/site_media/upload/home/list/login.png',
+            'http://jeeart.com/site_media/upload/home/list/mini-2.gif',
+            'http://jeeart.com/site_media/upload/home/list/nearby.png',
+            'http://jeeart.com/site_media/upload/home/list/nesticon.jpg'
+        ];
+        
+        KISSY.use('node,gallery/kissy-mscroller/1.0/index', function (S, Node, Scroller) {
+            var $ = Node.all;
+            
+            //fill content
+            var $vp = $('.scroll-viewport'),
+                $wrap = $vp.all('.scroll-wrap'),
+                scroller;
+            
+            function fillContent () {
+                var str = [];
+                for(var i = 0; i < 100; i ++) {
+                    (i%9 == 0) ? str.push('<div class="line withimg"><img src="http://jeeart.com/site_media/images/icon/loading.gif" data-src="'+_imgs[parseInt(i/9)]+'" /></div>') : str.push('<div class="line">line '+i+'</div>');
+                }
+                str = str.join('');
+                var fragment = $(str);
+                $wrap.append(fragment);
+            }
+            function resize() {
+                var hh = parseInt($('header').css('height'));
+                $vp.css('height', (window.innerHeight - hh)); 
+            }
+            function initScroller () {
+                scroller = new Scroller('.scroll-viewport', {
+                    scrollingY: true,
+                    scrollingX: false,
+                    imgLazyload: true
+                });
+            }
+            
+            //init
+            fillContent();
+            resize();
+            $(window).on('resize', resize);
+            initScroller();
+        });
+    </script>
+</body>
+</html>
