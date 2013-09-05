@@ -19,4 +19,9 @@
 
     [!]
 
+### V1.1
+
+- fix blurring after scrolling translate
+- mousewheel scroll & mousedrag scroll support
+
 

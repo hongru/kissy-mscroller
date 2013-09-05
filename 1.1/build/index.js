@@ -1,16 +1,16 @@
 /*
 combined files : 
 
-gallery/kissy-mscroller/1.0/hos
-gallery/kissy-mscroller/1.0/osptr
-gallery/kissy-mscroller/1.0/rafanim
-gallery/kissy-mscroller/1.0/scrollfn
-gallery/kissy-mscroller/1.0/fakescroller
-gallery/kissy-mscroller/1.0/index
+gallery/kissy-mscroller/1.1/hos
+gallery/kissy-mscroller/1.1/osptr
+gallery/kissy-mscroller/1.1/rafanim
+gallery/kissy-mscroller/1.1/scrollfn
+gallery/kissy-mscroller/1.1/fakescroller
+gallery/kissy-mscroller/1.1/index
 
 */
 // support overflow scrolling
-KISSY.add('gallery/kissy-mscroller/1.0/hos',function (S) {
+KISSY.add('gallery/kissy-mscroller/1.1/hos',function (S) {
     function hasOverflowScrolling() {
         var prefixes = ['webkit', 'moz', 'o', 'ms'];
         var div = document.createElement('div');
@@ -51,7 +51,7 @@ KISSY.add('gallery/kissy-mscroller/1.0/hos',function (S) {
     return hasOverflowScrolling();
 });
 
-KISSY.add('gallery/kissy-mscroller/1.0/osptr',function (S, Node, Base, Promise) {
+KISSY.add('gallery/kissy-mscroller/1.1/osptr',function (S, Node, Base, Promise) {
     var $ = Node.all;
     /**
      * 
@@ -260,7 +260,7 @@ KISSY.add('gallery/kissy-mscroller/1.0/osptr',function (S, Node, Base, Promise) 
     requires: ['node', 'base', 'promise']
 });
 // raf anim
-KISSY.add('gallery/kissy-mscroller/1.0/rafanim',function (S) {
+KISSY.add('gallery/kissy-mscroller/1.1/rafanim',function (S) {
     var time = Date.now || function() {
 		return +new Date();
 	};
@@ -469,7 +469,7 @@ KISSY.add('gallery/kissy-mscroller/1.0/rafanim',function (S) {
     
     return Animate;
 });
-KISSY.add('gallery/kissy-mscroller/1.0/scrollfn',function (S, Animate) {
+KISSY.add('gallery/kissy-mscroller/1.1/scrollfn',function (S, Animate) {
 	var NOOP = function(){};
 
 	/**
@@ -1778,7 +1778,7 @@ KISSY.add('gallery/kissy-mscroller/1.0/scrollfn',function (S, Animate) {
 }, {
     requires: ['./rafanim']
 });
-KISSY.add('gallery/kissy-mscroller/1.0/fakescroller',function (S, Scroller, Node, Promise) {
+KISSY.add('gallery/kissy-mscroller/1.1/fakescroller',function (S, Scroller, Node, Promise) {
     
     var $ = Node.all;
     
@@ -1793,6 +1793,13 @@ KISSY.add('gallery/kissy-mscroller/1.0/fakescroller',function (S, Scroller, Node
         this.scroller = new Scroller(function(left, top, zoom) {
             that.render(left, top, zoom);
             that.onScroll && that.onScroll(left, top, zoom);
+            
+            clearTimeout(that.__finishAtInt);
+            that.__finishAtInt = setTimeout(function () {
+                left = Math.round(left);
+                top = Math.round(top);
+                that.render(left, top, zoom);
+            }, 200);
         }, options);
 
         // bind events
@@ -1906,7 +1913,7 @@ KISSY.add('gallery/kissy-mscroller/1.0/fakescroller',function (S, Scroller, Node
             }, false);
 
         // non-touch bind mouse events
-        } else {
+        } else if (that.options.mouseDrag) {
             
             var mousedown = false;
 
@@ -1962,6 +1969,13 @@ KISSY.add('gallery/kissy-mscroller/1.0/fakescroller',function (S, Scroller, Node
             }, false);
 
         }
+        
+        // mousewheel scroll
+        this.container.addEventListener("mousewheel", function(e) {
+            var left = that.options.scrollingX ? -e.wheelDelta : 0,
+                top = that.options.scrollingY ? -e.wheelDelta : 0;
+            that.scroller.scrollBy(left, top, true);
+        }, false);
 
     };
     
@@ -1978,6 +1992,7 @@ KISSY.add('gallery/kissy-mscroller/1.0/fakescroller',function (S, Scroller, Node
                 },
                 hasPtr: false,
                 hasBar: true,
+                mouseDrag: true, 
                 imgLazyload: true,
                 ptrCallback: function () {}
             }, opt, true, null, true);
@@ -2202,7 +2217,7 @@ KISSY.add('gallery/kissy-mscroller/1.0/fakescroller',function (S, Scroller, Node
  * @author cen'an<cenan.chr@taobao.com>
  * @module kissy-mscroller
  **/
-KISSY.add('gallery/kissy-mscroller/1.0/index',function (S, hos, NativeScroller, FakeScroller) {
+KISSY.add('gallery/kissy-mscroller/1.1/index',function (S, hos, NativeScroller, FakeScroller) {
     //return FakeScroller;
     return hos ? NativeScroller : FakeScroller;
     

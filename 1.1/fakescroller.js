@@ -13,6 +13,13 @@ KISSY.add(function (S, Scroller, Node, Promise) {
         this.scroller = new Scroller(function(left, top, zoom) {
             that.render(left, top, zoom);
             that.onScroll && that.onScroll(left, top, zoom);
+            
+            clearTimeout(that.__finishAtInt);
+            that.__finishAtInt = setTimeout(function () {
+                left = Math.round(left);
+                top = Math.round(top);
+                that.render(left, top, zoom);
+            }, 200);
         }, options);
 
         // bind events
@@ -126,7 +133,7 @@ KISSY.add(function (S, Scroller, Node, Promise) {
             }, false);
 
         // non-touch bind mouse events
-        } else {
+        } else if (that.options.mouseDrag) {
             
             var mousedown = false;
 
@@ -182,6 +189,13 @@ KISSY.add(function (S, Scroller, Node, Promise) {
             }, false);
 
         }
+        
+        // mousewheel scroll
+        this.container.addEventListener("mousewheel", function(e) {
+            var left = that.options.scrollingX ? -e.wheelDelta : 0,
+                top = that.options.scrollingY ? -e.wheelDelta : 0;
+            that.scroller.scrollBy(left, top, true);
+        }, false);
 
     };
     
@@ -198,6 +212,7 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                 },
                 hasPtr: false,
                 hasBar: true,
+                mouseDrag: true, 
                 imgLazyload: true,
                 ptrCallback: function () {}
             }, opt, true, null, true);
