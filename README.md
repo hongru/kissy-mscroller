@@ -1,8 +1,8 @@
 ## kissy-mscroller
 
-* 版本：1.1
-* 教程：[http://gallery.kissyui.com/kissy-mscroller/1.1/guide/index.html](http://gallery.kissyui.com/kissy-mscroller/1.1/guide/index.html)
-* demo：[http://gallery.kissyui.com/kissy-mscroller/1.1/demo/index.html](http://gallery.kissyui.com/kissy-mscroller/1.1/demo/index.html)
+* 版本：1.2
+* 教程：[http://gallery.kissyui.com/kissy-mscroller/1.2/guide/index.html](http://gallery.kissyui.com/kissy-mscroller/1.2/guide/index.html)
+* demo：[http://gallery.kissyui.com/kissy-mscroller/1.2/demo/index.html](http://gallery.kissyui.com/kissy-mscroller/1.2/demo/index.html)
 
 ## features
 
@@ -23,5 +23,11 @@
 
     - fix blurring after scrolling translate
     - mousewheel scroll & mousedrag scroll support
+    
+### V1.2
+
+    - fix api `scrollBy`
+    - fix api `scrollTo`
+    - add api `reflow`
 
 

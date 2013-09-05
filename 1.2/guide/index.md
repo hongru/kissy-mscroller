@@ -44,6 +44,7 @@ kissy-mscroller是 基于kissy的更mobile话的scroller，优先使用原生的
     - hasPtr: 是否启用 pull to refresh
     - ptrCallback: pull to refresh 触发后的回调，比如异步请求数据等。（ptrCallback 在 hasPtr 为true的情况下有效）
     - imgLazyload: 是否启用滚动容器内 的img 自动懒加载策略。
+    - message: {pull: '***', release: '***', loading: '***'}
     - ...
 
 ## API说明
