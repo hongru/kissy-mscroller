@@ -205,6 +205,8 @@ KISSY.add(function (S, Scroller, Node, Promise) {
         this.isTouch = !!('ontouchstart' in window);
         this.els = {};
         this.cfg = S.mix({
+                scrollingY: true,
+                scrollingX: false,
                 message: {
                     pull: 'Pull to refresh',
                     release: 'Release to refresh',
@@ -345,10 +347,10 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                     })
                 }
                 
-                scrollers.push(scroller);
+                scrollers.push(scrollerC);
             });
             
-            this.scroller = scrollers.length > 1 ? scrollers : scrollers[0];
+            this.scrollers = scrollers;
         },
         setBarHeight: function ($bar, $cont) {
             var vpH = $cont.height(),
@@ -424,6 +426,22 @@ KISSY.add(function (S, Scroller, Node, Promise) {
                     }
                 }
             });
+        },
+        //reflow
+        reflow: function () {
+            for (var i = 0; i < this.scrollers.length; i ++) {
+                this.scrollers[i].reflow && this.scrollers[i].reflow();
+            }
+        },
+        scrollTo: function (left, top, anim) {
+            for (var i = 0; i < this.scrollers.length; i ++) {
+                this.scrollers[i].scroller && this.scrollers[i].scroller.scrollTo(left, top, anim);
+            }
+        },
+        scrollBy: function (left, top, anim) {
+            for (var i = 0; i < this.scrollers.length; i ++) {
+                this.scrollers[i].scroller && this.scrollers[i].scroller.scrollBy(left, top, anim);
+            }
         }
     };
 

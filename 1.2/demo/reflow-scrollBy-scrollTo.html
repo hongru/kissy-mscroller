@@ -2,14 +2,12 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>Pull to Refresh</title>
+    <title>Simple body</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/> 
     <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1" media="(device-height: 568px)"/>
     <script src="http://g.tbcdn.cn/kissy/k/1.3.0/kissy-min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="http://g.tbcdn.cn/kissy/k/1.3.0/css/dpl/base-min.css">
 
-    <link rel="stylesheet" href="css/pull-to-refresh.css" />
-    
     <style>
         header {
             width: 100%;
@@ -29,10 +27,28 @@
             background: #ccc;
         }
         
+        .ctrl{
+            position: fixed;
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            right: 20px;
+            top: 20px;
+            z-index: 2;
+        }
+        .ctrl ul {margin:0; padding:0; list-style: none}
+        .ctrl li {padding: 5px 0;}
     </style>
 </head>
 
 <body>
+    <div class="ctrl">
+        <ul>
+            <li><button id="reflow">Add 10 items & Reflow</button></li>
+            <li><button id="scrollBy">Scroll By item's height</button></li>
+            <li><button id="scrollTo">Scroll To top</button></li>
+        </ul>
+    </div>
     <header>Header</header>
     <section class="scroll-viewport">
         <div class="scroll-wrap"></div>
@@ -54,7 +70,7 @@
             });
         }
         
-        KISSY.use('node,gallery/kissy-mscroller/1.1/index', function (S, Node, Scroller) {
+        KISSY.use('node,gallery/kissy-mscroller/1.2/index', function (S, Node, Scroller) {
             var $ = Node.all;
             
             //fill content
@@ -64,7 +80,7 @@
             
             function fillContent () {
                 var str = [];
-                for(var i = 0; i < 100; i ++) {
+                for(var i = 0; i < 10; i ++) {
                     (i%9 == 0) ? str.push('<div class="line"><a href="javascript:alert('+i+')">line '+i+'</a></div>') : str.push('<div class="line">line '+i+'</div>');
                 }
                 str = str.join('');
@@ -76,17 +92,7 @@
                 $vp.css('height', (window.innerHeight - hh)); 
             }
             function initScroller () {
-                scroller = new Scroller('.scroll-viewport', {
-                    scrollingY: true,
-                    scrollingX: false,
-                    hasPtr: true,
-                    ptrCallback: function (defer) { 
-                        setTimeout(function () {
-                            alert('refresh finish');
-                            defer.resolve();
-                        }, 2000);
-                    }
-                });
+                scroller = new Scroller('.scroll-viewport');
             }
             
             //init
@@ -94,6 +100,16 @@
             resize();
             $(window).on('resize', resize);
             initScroller();
+            $('#reflow').on('click', function () {
+                fillContent();
+                scroller.reflow();
+            });
+            $('#scrollBy').on('click', function () { 
+                scroller.scrollBy(0, $wrap.all('.line').height(), true)
+            });
+            $('#scrollTo').on('click', function () { 
+                scroller.scrollTo(0, 0, true)
+            });
         });
     </script>
 </body>
