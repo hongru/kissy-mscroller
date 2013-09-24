@@ -1,8 +1,8 @@
 ## kissy-mscroller
 
-* 版本：1.2
-* 教程：[http://gallery.kissyui.com/kissy-mscroller/1.2/guide/index.html](http://gallery.kissyui.com/kissy-mscroller/1.2/guide/index.html)
-* demo：[http://gallery.kissyui.com/kissy-mscroller/1.2/demo/index.html](http://gallery.kissyui.com/kissy-mscroller/1.2/demo/index.html)
+* 版本：1.3
+* 教程：[http://gallery.kissyui.com/kissy-mscroller/1.3/guide/index.html](http://gallery.kissyui.com/kissy-mscroller/1.3/guide/index.html)
+* demo：[http://gallery.kissyui.com/kissy-mscroller/1.3/demo/index.html](http://gallery.kissyui.com/kissy-mscroller/1.3/demo/index.html)
 
 ## features
 
@@ -29,5 +29,9 @@
     - fix api `scrollBy`
     - fix api `scrollTo`
     - add api `reflow`
+    
+### V1.3
+
+    - fix issue https://github.com/hongru/kissy-mscroller/issues/1
 
 
